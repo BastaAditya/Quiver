@@ -1,0 +1,164 @@
+{% extends 'loginsignup/navbar.html' %} {% load static %} {% load loginsignup_extras %} {% block css %}
+<link rel="stylesheet" href={% static 'posts/css/me.css'%}>
+<style>
+.ptr:hover {
+    cursor: pointer;
+}
+</style> 
+{% endblock %} {% block main %}
+<div class="container">
+    <div class="left">
+        <img src={{profile.profile_photo.url}} alt={{profile.user.username}} class="profile">
+        <div class="details">
+            <p class="username">@{{profile.user.username}}</p>
+            <p class="name">{{profile.user.first_name}} {{profile.user.last_name}}</p>
+            <a class="except" href="/friends/">
+                <p class="friends"><span class="info">Friends</span> : {{profile.friends.all.count}}<button type="button" class="viewall">View All</button></p>
+            </a>
+            <p class="posts"><span class="info">Posts</span> : {{posts.all.count}}</p>
+            <button type="button" class="update" onclick="handleClick()">Update Details</button>
+        </div>
+    </div>
+    <div class="middle">
+        <div class="mid-content">
+            {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+            <h5 class="success">{{message}}</h5>
+            {% else %}
+            <h5 class="errorfield">{{message}}</h5>
+            {% endif %} {% endfor %} {% endif %}
+            {% for post in posts %}
+                <div class="post">
+                    <div class="creator">
+                        <img src={{post.post_creator.profile_photo.url}} alt={{post.post_creator.user.username}} class="poster_photo">
+                        <p>{{post.post_creator.user.username}}</p>
+                        <p class="datepost">{{post.posted_on|date:"SHORT_DATE_FORMAT"}}</p>
+                    </div>
+                    <p class="option" id={{post.id}} onclick="handlePost(event)">&hellip;</p>
+                    {% if post.picture %}
+                        <img src={{post.picture.url}} alt="Post Picture" class="post_photo">
+                    {% endif %}
+                    {% if post.picture %}
+                        {% autoescape on %}
+                            <p class="caption">{{post.caption|linebreaksbr}}</p>
+                        {% endautoescape %}
+                    {% else %}
+                        {% autoescape on %}
+                            <p class="caption nophoto">{{post.caption|linebreaksbr}}</p>
+                        {% endautoescape %}
+                    {% endif %}
+                    <div class="btns">
+                        {% if post in post_liked %}
+                            <button type="button" class="likes btn liked" id={{"L"}}{{post.id}}>{{post.post_likes.all.count}} Likes</button>
+                        {% else %}
+                            <button type="button" class="likes btn" id={{"L"}}{{post.id}}>{{post.post_likes.all.count}} Likes</button>
+                        {% endif %}
+                        <button type="button" class="comments btn" id={{post.id}} onclick="handleComment(event)">{{post.comments.all.count}} comments</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="right">
+            <div class="requests">
+                <h1 class="sub-heading">Pending Requests</h1>
+                {% if not pending %}
+                    <h4 style="color:wheat; margin-top:1rem; text-align:center">Looks like you do not any pending requests</h4>
+                {% endif %}
+                {% for request_info in pending %}
+                    <div class="prof">
+                        <img onclick="handleLinkProfile('{{request_info.sender.user.username}}')" src={{request_info.sender.profile_photo.url}} alt={{request_info.sender.user.username}} class="request_photo">
+                        <p onclick="handleLinkProfile('{{request_info.sender.user.username}}')" class="requester">@{{request_info.sender.user.username}}</p>
+                        <button type="button" class="accept" id={{request_info.sender.user.username}}>Accept Request</button>
+                    </div>
+                {% endfor %}
+                <button type="button" class="more">View More</button>
+            </div>
+            <div class="friends">
+                <h1 class="sub-heading">Send Requests</h1>
+                {% for beaver in random %}
+                    <div class="prof">
+                        <img onclick="handleLinkProfile('{{beaver.user.username}}')" src={{beaver.profile_photo.url}} alt={{beaver.user.username}} class="request_photo ptr">
+                        <p onclick="handleLinkProfile('{{beaver.user.username}}')" class="requester ptr">@{{beaver.user.username}}</p>
+                        <button type="button" class="send" id={{beaver.user.username}}>Send Request</button>
+                    </div>
+                {% endfor %}
+                <button type="button" class="more sendreq">View More</button>
+            </div>
+        </div>
+    </div>
+    {% endblock %} {% block scriptag %}
+    <script>
+        const handleClick = () => {
+            window.location.href = `http://${window.location.host}/update/`;
+        }
+
+        const handlePost = (event) => {
+            window.location.href = `http://${window.location.host}/post/modify/${event.target.id}/`;
+        }
+
+        const handleComment = (event) => {
+            window.location.href = `http://${window.location.host}/post/comment/${event.target.id}/`;
+        }
+
+        const refreshPage = () => {
+            window.location.reload();
+        }
+
+        const handleLinkProfile = (username) => {
+            window.location.href = `http://${window.location.host}/post/friend/${username}/`;
+        }
+
+        $(document).ready(function() {
+            $(".more").on('click', refreshPage)
+            $(".accept").on("click", function() {
+                const username = this.id;
+                const btn = $(this);
+                $.ajax({
+                    url : '/post/ajax/accept/request/',
+                    data: {
+                        'username_friend': username,
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        btn.html('Accepted')
+                        btn.removeClass('accept');
+                        btn.addClass('accepted');
+                    }
+                })
+            })
+            $(".send").on("click", function() {
+                const username = this.id;
+                const btn = $(this);
+                $.ajax({
+                    url : '/post/ajax/send/request/',
+                    data: {
+                        'username_friend': username,
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        btn.html('Request Sent')
+                        btn.removeClass('send');
+                        btn.addClass('alreadysent');
+                    }
+                })
+            });
+            $(".likes").on('click', function() {
+                const id = this.id.slice(1,)
+                $.ajax({
+                    url: '/post/ajax/like/',
+                    data: {
+                    'id': id
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        $(`#L${data.id}`).html(`${data.count} Likes`)
+                        if(data.status) {
+                            $(`#L${data.id}`).addClass("liked")
+                        } else {
+                            $(`#L${data.id}`).removeClass("liked")
+                        }
+                    }
+                });
+            });
+        })
+    </script>
+    {% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'loginsignup/navbar.html' %} 
+{% load static %} {% load loginsignup_extras %} 
+{% block css %}
+<link rel="stylesheet" href = {% static 'loginsignup/css/update.css' %}>
+<style>
+</style>
+</head>
+{% endblock %}
+{% block main %}
+</div>
+<div class="whole">
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="left">
+    <div class="small">
+        <label for="username">Username</label>
+        <input type="text" value="{{user.username}}" name="username" required placeholder="Example : johniscool@101">
+    </div>
+    <div class="small">
+        <label for="firstname">First Name</label>
+        <input type="text" value="{{user.first_name}}" name="first_name" required placeholder="Example : John">
+    </div>
+    <div class="small">
+        <label for="username">Last Name</label>
+        <input class="last" type="text" value="{{user.last_name}}" name="last_name" required placeholder="Example : Doe">
+    </div>
+    <div class="small">
+        <label for="dob">Date of birth</label>
+        <input type="date" name="date_of_birth" id="special" required placeholder="Example : 26.0.2000">
+    </div>
+    <div class="small">
+        <label for="gender">Gender</label>
+        <select required name="gender" id="gender">
+            {% if "M" == beaver.gender %}
+                <option value="M" selected="selected">Male</option>
+            {% else %}
+                <option value="M">Male</option>
+            {% endif %}
+            {% if "F" == beaver.gender %}
+                <option value="F" selected="selected">Female</option>
+            {% else %}
+                <option value="F">Female</option>
+            {% endif %}
+            {% if "N" == beaver.gender %}
+                <option value="N" selected="selected">Cannot Specify Option</option>
+            {% else %}
+                <option value="N">Cannot Specify Option</option>
+            {% endif %}
+        </select>
+    </div>
+    <div class="small">
+        <label for="email">Email</label>
+        <input type="email" value={{user.email}} name="email" required placeholder="Example : john@doe.com">
+    </div>
+</div>
+<div class="right">
+    <div class="small">
+        <label for="phone">Phone Number</label>
+        <input type="number" value={{beaver.phone}} name="phone" required placeholder="Example : 1234-123-433">
+    </div>
+    <div class="small">
+        <label for="bio">Bio</label>
+        <textarea name="bio" placeholder="A sentence or two to describe you">{{beaver.bio}}</textarea>
+    </div>
+    <div class="small">
+        <label for="college">College</label>
+        <input type="text" value={{beaver.college}} name="college">
+    </div>
+    <div class="small">
+        <label for="company">Company</label>
+        <input type="text" value={{beaver.company}} name="company">
+    </div>
+    <div class="small">
+        <label for="industry">Industry</label>
+        <input type="text" value={{beaver.industry}} name="industry">
+    </div>
+    <button type="button" onclick="updatePassword()" class="update updatepwd">Update Password</button>
+
+</div>
+<div class="middle">
+    <div class="box">
+        <h1 class="heading">Update Profile</h1>
+        {% if form.errors %}
+            <h5 class="errorfield">{{form.errors}}</h5>
+        {% endif%}
+        <img src={{beaver.profile_photo.url}} alt="Profile Picture" class="profile_photo" id="profileunique"><br />
+        <input name="profile_photo" onchange='openFile(event)' type="file" id="file"/>
+        <label for="file" class="btn-2" name="profile_photo"><span>Upload a photo</span></label><br />
+        <input type="submit" value="Update" class="update">
+    </div>
+</div>
+</form>
+</div>
+{% endblock %}
+{% block scriptag %}
+    <script src={% static 'loginsignup/JS/complete.js' %}></script>
+    <script>
+        const ele = document.getElementById("special")
+        const date = new Date({{beaver.date_of_birth|date:"Y"}}, {{beaver.date_of_birth|date:"m"}}, {{beaver.date_of_birth|date:"j"}})
+        const year = date.getFullYear();
+        let month = date.getMonth();
+        let day = date.getDate();
+        if(month<10) {
+            month = `0${month}`
+        }
+        if(day<10) {
+            day = `0${day}`
+        }
+        const dateval = `${year}-${month}-${day}`;
+        ele.value = dateval;
+
+        const updatePassword = () => {
+            window.location.href = `http://${window.location.host}/update/reset/`;
+        }
+    </script>
+
+{% endblock %}

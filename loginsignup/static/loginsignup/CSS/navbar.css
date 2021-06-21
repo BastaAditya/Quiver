@@ -1,0 +1,102 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+html {
+    background-color: rgb(24, 17, 26);
+}
+
+body {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    height: 100vh;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: rgb(79, 17, 82);
+}
+
+li {
+    float: right;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 20px 20px;
+    text-decoration: none;
+    font-size: 17.5;
+    font-weight: 400;
+}
+
+li input {
+    display: block;
+    color: black;
+    text-align: start;
+    padding: 1px 10px;
+    margin: 10px;
+    margin-right: 25px;
+    width: 230px;
+    height: 40px;
+    text-decoration: none;
+    font-size: 17.5;
+    font-weight: 400;
+    border-radius: 15px;
+    transition: width 1s;
+    padding-right: 50px;
+}
+
+li input:focus {
+    outline: none;
+    width: 500px;
+}
+
+li a:hover {
+    background-color: rgb(107, 16, 107);
+}
+
+
+/* navigation bar*/
+
+.navQuiver {
+    float: left;
+    font-size: 33;
+    color: white;
+    font-family: 'Oleo Script', cursive;
+    font-weight: 100;
+    margin-top: 7;
+    margin-left: 10;
+}
+
+.navbar {
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    z-index: 5;
+}
+
+.holder {
+    margin-top: 5%;
+}
+
+.searchbar {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.searchicon {
+    height: 25px;
+    position: absolute;
+    right: 40px;
+}
+
+.searchicon:hover {
+    cursor: pointer;
+}

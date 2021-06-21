@@ -1,0 +1,188 @@
+{% extends 'loginsignup/navbar.html' %} {% load static %} {% block css %}
+<link rel="stylesheet" href={% static 'chat/CSS/chat_list.css' %}>
+<link rel="stylesheet" href={% static 'chat/CSS/room.css' %}> 
+<style type="text/css">
+    .rightreply{
+        background-color: rgb(160, 193, 110);
+        margin-bottom:0px;
+    }
+
+    .leftreply{
+        background-color: rgb(236 236 122);
+        margin-bottom:0px;
+    }
+
+    .replyButton{
+        background-color: rgb(218, 255, 162);
+    }
+</style>
+{% endblock %} {% block main %}
+<div class="container">
+    <div class="chatwindow">
+        <div class="chatusers">
+            <h1 class="heading">Quiver Chat</h1>
+            <div class="userlist">
+                <div class="userholder">
+                    {% for friend in friends %}
+                    <a href={% url 'chat:room' friend.urlparam %}>
+                        <div class="user">
+                            <div class="userimage">
+                                <img class="userlogo" src={{friend.profile.url}} alt={{friend.friend}}></img>
+                            </div>
+                            <div class="usertext">
+                                <p>{{friend.friend}}</p>
+                            </div>
+                        </div>
+                        <a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="chatbox">
+            <div class="chatcontainer">
+                <div class="heading custom">
+                    <div class="imageholder">
+                        <img src={{chatTo.profile_photo.url}} class="userlogo usercustom" alt={{chatTo.user.username}}></img>
+                    </div>
+                    <div class="name">
+                        <h5 class="header">{{chatTo.user.username}}</h5>
+                    </div>
+                </div>
+                <div class="messages">
+                    {% for mssg in chatmssgs %}
+                    {% if mssg.sender == chatTo.user.username %}
+                        <div class="left">
+                            <div class="leftmessage">
+                                {% if mssg.reply != '' %}
+                                <p class="leftreply">{{mssg.reply}}</p>
+                                {% endif %}    
+                                <p>{{mssg.message}}</p>
+                                <button type="button" class="replyButton" onclick="Reply(this.id)" id="{{mssg.message}}"> ▼ </button>
+                            </div>
+                        </div>
+                    {% else %}
+                         <div class="right">
+                            <div class="rightmessage">
+                                {% if mssg.reply != '' %}
+                                <p class="rightreply">{{mssg.reply}}</p>
+                                {% endif %}    
+                                <p>{{mssg.message}}</p>
+                                <button type="button" class="replyButton" onclick="Reply(this.id)" id="{{mssg.message}}"> ▼ </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="textinput">
+                    <input id="chat-message-input" type="text" name="text" class="text" placeholder="Type a message">
+                    <input type="text" hidden id="reply" value="">
+                    <img id="chat-message-submit" src={% static 'chat/add.png'%} alt="Add" class="add">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scriptag %}
+<script>
+    const element = document.getElementsByClassName("messages")[0];
+    console.log(element);
+    element.scrollTo(0, element.scrollHeight);
+    const roomName = "{{ room_name }}";
+    console.log(roomName);
+
+    function Reply(id){
+    const messageInputReplyDom = document.querySelector('#reply');
+    console.log(id);
+    messageInputReplyDom.value = id;
+    }
+
+
+    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const message = data['message'];
+        const sender = data['sender'];
+        const reply = data['reply'];
+        const notLoggedInUser = '{{chatTo.user.username|escapejs}}';
+        const getMessageWindow = document.getElementsByClassName("messages")[0];
+        // Write in Yellow
+        if(sender === notLoggedInUser) {
+            const divouter = document.createElement("div");
+            divouter.className = "left";
+            const divinner = document.createElement("div");
+            divinner.className = "leftmessage";
+            if(reply != ''){
+                const replypara = document.createElement("p");
+                replypara.className = "leftreply";
+                const replynode = document.createTextNode(reply);
+                replypara.append(replynode);
+                divinner.append(replypara);
+            }
+            
+            const textnode = document.createTextNode(message);
+            divinner.append(textnode);
+            const replyButton = document.createElement("button");
+            const buttonText = document.createTextNode("▼");
+            replyButton.append(buttonText);
+            replyButton.className = "replyButton";
+            replyButton.id = message;
+            replyButton.onclick = function(){Reply(replyButton.id);};
+            divinner.append(replyButton);
+            divouter.append(divinner);
+            getMessageWindow.appendChild(divouter);
+        }
+             else {
+            const divouter = document.createElement("div");
+            divouter.className = "right";
+            const divinner = document.createElement("div");
+            divinner.className = "rightmessage";
+            if(reply != ''){
+                const replypara = document.createElement("p");
+                replypara.className = "rightreply";
+                const replynode = document.createTextNode(reply);
+                replypara.append(replynode);
+                divinner.append(replypara);
+            }
+            const textnode = document.createTextNode(message);
+            divinner.append(textnode);
+            const replyButton = document.createElement("button");
+            replyButton.className = "replyButton";
+            const buttonText = document.createTextNode("▼");
+            replyButton.append(buttonText);
+            replyButton.id = message;
+            replyButton.onclick = function(){Reply(replyButton.id);};
+            divinner.append(replyButton);
+            divouter.append(divinner);
+            getMessageWindow.appendChild(divouter);
+        }
+        const element = document.getElementsByClassName("messages")[0];
+        element.scrollTop = element.scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const messageInputReplyDom = document.querySelector('#reply');
+        const message = messageInputDom.value;
+        const reply = messageInputReplyDom.value;
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'reply' : reply
+        }));
+
+        messageInputDom.value = '';
+        messageInputReplyDom.value = '';
+    };
+</script>
+{% endblock %}

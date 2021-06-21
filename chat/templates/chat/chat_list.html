@@ -1,0 +1,29 @@
+{% extends 'loginsignup/navbar.html' %} {% load static %} {% block css %}
+<link rel="stylesheet" href={% static 'chat/CSS/chat_list.css' %}> {% endblock %} {% block main %}
+<div class="container">
+    <div class="chatwindow">
+        <div class="chatusers">
+            <h1 class="heading">Quiver Chat</h1>
+            <div class="userlist">
+                <div class="userholder">
+                    {% for friend in friends %}
+                    <a href={% url 'chat:room' friend.urlparam %}>
+                        <div class="user">
+                            <div class="userimage">
+                                <img class="userlogo" src={{friend.profile.url}} alt={{friend.friend}}></img>
+                            </div>
+                            <div class="usertext">
+                                <p>{{friend.friend}}</p>
+                            </div>
+                        </div>
+                        <a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="chatmessage">
+            <img src={% static 'chat/official.png' %} alt="Quiver" class="official">
+        </div>
+    </div>
+</div>
+{% endblock %}

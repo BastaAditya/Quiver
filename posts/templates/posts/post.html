@@ -1,0 +1,25 @@
+{% extends 'loginsignup/navbar.html' %} {% load static %} {% load loginsignup_extras %} {% block css %}
+<link rel="stylesheet" href={% static 'posts/css/post.css'%}> {% endblock %} {% block main %}
+<h1 class="main-heading">Post your thoughts</h1>
+<img class="imagepic" id="profileunique"><br><br>
+<div class="container">
+    <h5 class="errorfield">{{ form.non_field_errors|errorOnly }} </h5>
+    <form class="formclass" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card">
+            <textarea autocorrect="on" autocapitalize="on" spellcheck="true" class="input" id="caption" name="caption" placeholder="A caption to express your thoughts" required>{{form.cleaned_data.caption}}</textarea><br><br>
+            <input name="picture" onchange='openFile(event)' type="file" id="file" />
+            <label for="file" class="btn-2"><span>Upload a photo</span></label>
+            <input type="radio" id="networking" name="choice" value="networking"> <label for="networking"> Networking</label>
+            <input type="radio" id="media" name="choice" value="media"> <label for="media"> Media</label>
+            <input type="submit" value="Post It" class="submit">
+        </div>
+    </form>
+</div>
+<div class="enter">
+</div>
+{% endblock %} {% block scriptag %}
+<script src={% static 'loginsignup/JS/complete.js' %}></script>
+<script>
+</script>
+{% endblock %}
